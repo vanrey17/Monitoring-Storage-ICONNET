@@ -13,7 +13,7 @@ if (isset($_GET['hapus'])) {
     
     // Jangan biarkan admin menghapus akunnya sendiri yang sedang login
     if ($id_hapus == $_SESSION['user_id']) {
-        $pesan_error = "Anda tidak dapat menghapus akun Anda sendiri saat sedang login!";
+        $pesan_error = "Anda tidak dapat menghapus akun Anda sendiri saat sedang login";
     } else {
         if ($conn->query("DELETE FROM users WHERE id = '$id_hapus'")) {
             $pesan_sukses = "Akun berhasil dihapus secara permanen.";
