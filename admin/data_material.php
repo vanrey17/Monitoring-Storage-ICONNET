@@ -12,7 +12,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 if (isset($_GET['hapus'])) {
     $id = $conn->real_escape_string($_GET['hapus']);
     
-    // Ambil nama barang dan nama file foto untuk dihapus (Opsional: menghapus file foto)
+    // Ambil nama barang dan nama file foto untuk dihapus
     $cek_data = $conn->query("SELECT nama_barang, foto FROM items WHERE id = '$id'")->fetch_assoc();
     $nama_hapus = $cek_data ? $cek_data['nama_barang'] : 'Barang';
     $foto_hapus = $cek_data ? $cek_data['foto'] : null;
@@ -43,7 +43,7 @@ $result = $conn->query($sql);
     <style>
         /* CSS LAYOUT SIDEBAR */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background-color: #f4f7f6; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background-color: #0f2c59; color: #fff; display: flex; flex-direction: column; height: 100vh; }
+        .sidebar { width: 260px; background-color: #0f2c59; color: #fff; display: flex; flex-direction: column; height: 100vh; flex-shrink: 0;}
         .sidebar-header { padding: 20px; text-align: center; background-color: #0a1f3f; }
         .sidebar-header h3 { margin: 0; font-size: 18px; color: #00bcd4; }
         .sidebar-header p { margin: 5px 0 0; font-size: 12px; color: #aaa; }
@@ -54,7 +54,7 @@ $result = $conn->query($sql);
         .sidebar-menu li a i { width: 25px; text-align: center; margin-right: 10px; }
         
         /* CSS KONTEN */
-        .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; min-width: 0;}
         .topbar { background-color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .content-area { padding: 30px; }
 
@@ -74,39 +74,67 @@ $result = $conn->query($sql);
         .tag-btn { background: #f0f4f8; color: #333; border: 1px solid #dcdfe3; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .tag-btn:hover { background: #00bcd4; color: white; border-color: #00bcd4; }
         
-        .btn-add-new { background: linear-gradient(135deg, #00bcd4 0%, #0a8e9e 100%); color: white; text-decoration: none; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,188,212,0.2); transition: 0.3s; height: 100%; }
+        .btn-add-new { background: linear-gradient(135deg, #00bcd4 0%, #0a8e9e 100%); color: white; text-decoration: none; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,188,212,0.2); transition: 0.3s; height: 100%; white-space: nowrap;}
         .btn-add-new:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,188,212,0.3); }
 
-        /* CARD KATALOG STYLE */
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .item-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); border-left: 5px solid #00bcd4; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s, box-shadow 0.3s; }
-        .item-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.08); }
+        /* CSS TABEL MODERN SEBAGAI PENGGANTI CARD */
+        .table-card { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; overflow-y: visible;}
         
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .item-card h3 { margin: 0; color: #333; font-size: 17px; line-height: 1.3; padding-right: 10px; }
+        table { width: 100%; min-width: 900px; border-collapse: separate; border-spacing: 0; }
+        table th, table td { padding: 15px; border-bottom: 1px solid #f0f0f0; text-align: left; font-size: 14px; vertical-align: middle; }
+        table th { background-color: #f8fafc; color: #475569; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        table tbody tr { transition: 0.2s; }
+        table tbody tr:hover { background-color: #f8fcff; }
+        table tr:last-child td { border-bottom: none; }
         
-        /* Ikon & Foto */
-        .item-icon { background: #e0f7fa; color: #00bcd4; width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-        .item-image { width: 45px; height: 45px; object-fit: cover; border-radius: 8px; flex-shrink: 0; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* ===================================================================
+           CSS VISUAL FOTO (FULL FRAME / TIDAK TERPOTONG)
+           =================================================================== */
+        .item-visual { display: flex; justify-content: center; align-items: center; }
+        .item-icon { background: #e0f7fa; color: #00bcd4; width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
         
-        .item-details p { margin: 5px 0; font-size: 13px; color: #666; display: flex; align-items: center; gap: 5px; }
-        .item-details span { font-weight: bold; color: #333; }
+        .item-image { 
+            width: 70px; /* Lebar diperbesar */
+            height: 70px; /* Tinggi diperbesar */
+            object-fit: contain; /* INI KUNCINYA: Gambar akan menyesuaikan area tanpa terpotong */
+            background-color: #fff; /* Latar belakang putih jika gambar transparan/ukurannya aneh */
+            border-radius: 6px; 
+            border: 1px solid #e2e8f0; 
+            padding: 3px; /* Memberikan efek bingkai frame */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            transition: transform 0.3s ease;
+        }
+        /* Efek Zoom saat di-hover Admin */
+        .item-image:hover {
+            transform: scale(2);
+            position: relative;
+            z-index: 100;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            cursor: zoom-in;
+        }
+        /* =================================================================== */
         
-        .stock-badge { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-top: 15px; }
+        /* Typography Tabel */
+        .merk-badge { background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #475569; font-weight: 500; }
+        .kategori-text { font-size: 13px; color: #64748b; }
+        
+        /* Badge Stok */
+        .stock-badge { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         .stock-ready { background-color: #e6f4ea; color: #1e8e3e; }
         .stock-warning { background-color: #fff3cd; color: #856404; }
         .stock-empty { background-color: #fce8e6; color: #d93025; }
 
-        /* TOMBOL AKSI ADMIN (EDIT & HAPUS) */
-        .admin-actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-edit-card { flex: 1; background: #f8f9fa; color: #0f2c59; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-edit-card:hover { background: #e2e8f0; border-color: #cbd5e1; }
+        /* TOMBOL AKSI ADMIN DALAM TABEL */
+        .btn-action-group { display: flex; gap: 8px; justify-content: center; }
+        .btn-edit-tbl { background: #f1f5f9; color: #0f2c59; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-edit-tbl:hover { background: #e2e8f0; border-color: #94a3b8; }
         
-        .btn-delete-card { flex: 1; background: #fce8e6; color: #d93025; border: 1px solid #fad2cf; padding: 10px; border-radius: 6px; text-align: center; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-delete-card:hover { background: #fad2cf; }
+        .btn-delete-tbl { background: #fce8e6; color: #d93025; border: 1px solid #fad2cf; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-delete-tbl:hover { background: #fad2cf; }
 
         /* Pesan Kosong saat pencarian tidak ditemukan */
-        .no-result { display: none; width: 100%; text-align: center; padding: 40px; color: #888; font-size: 15px; background: #fff; border-radius: 10px; grid-column: 1 / -1; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+        .no-result { display: none; width: 100%; text-align: center; padding: 40px; color: #888; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -127,7 +155,7 @@ $result = $conn->query($sql);
 
             <div class="header-actions">
                 <div class="filter-section">
-                    <input type="text" id="searchInput" class="search-box" placeholder="Cari nama atau merk barang, misal: Drop Core, ZTE..." onkeyup="filterCards()">
+                    <input type="text" id="searchInput" class="search-box" placeholder="Cari nama atau merk barang, misal: Drop Core, ZTE..." onkeyup="filterTable()">
                     
                     <div class="quick-tags">
                         <span><i class="fas fa-layer-group"></i> Filter Kategori:</span>
@@ -144,102 +172,121 @@ $result = $conn->query($sql);
                 </a>
             </div>
 
-            <div class="grid-container" id="katalogGrid">
-                <div class="no-result" id="noResultMsg">
+            <div class="table-card">
+                <div id="noResultMsg" class="no-result">
                     <i class="fas fa-box-open" style="font-size: 40px; color: #ddd; margin-bottom: 10px; display: block;"></i>
                     Barang yang Anda cari tidak ditemukan dalam database.
                 </div>
 
-                <?php
-                if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                        $merk = isset($row['merk']) ? $row['merk'] : '-';
+                <div class="table-responsive" id="tableContainer">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">No</th>
+                                <th style="text-align: center; width: 100px;">Visual</th>
+                                <th>Nama Material</th>
+                                <th>Kategori</th>
+                                <th>Merk</th>
+                                <th>Sisa Stok</th>
+                                <th style="text-align: center; width: 180px;">Aksi Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            if ($result->num_rows > 0) {
+                                $no = 1;
+                                while($row = $result->fetch_assoc()) {
+                                    $merk = isset($row['merk']) ? $row['merk'] : '-';
 
-                        // Tentukan Icon Fallback berdasarkan nama barang
-                        $icon = "fa-box";
-                        $nama_lower = strtolower($row['nama_barang']);
-                        if (strpos($nama_lower, 'kabel') !== false || strpos($nama_lower, 'drop core') !== false || strpos($nama_lower, 'patchcord') !== false) $icon = "fa-network-wired";
-                        if (strpos($nama_lower, 'ont') !== false || strpos($nama_lower, 'router') !== false || strpos($nama_lower, 'adaptor') !== false) $icon = "fa-wifi";
-                        if (strpos($nama_lower, 'clamp') !== false || strpos($nama_lower, 'paku') !== false || strpos($nama_lower, 'sclamp') !== false || strpos($nama_lower, 'hook') !== false) $icon = "fa-tools";
-                        if (strpos($nama_lower, 'splitter') !== false || strpos($nama_lower, 'konektor') !== false) $icon = "fa-plug";
+                                    // Tentukan Icon Fallback berdasarkan nama barang
+                                    $icon = "fa-box";
+                                    $nama_lower = strtolower($row['nama_barang']);
+                                    if (strpos($nama_lower, 'kabel') !== false || strpos($nama_lower, 'drop core') !== false || strpos($nama_lower, 'patchcord') !== false) $icon = "fa-network-wired";
+                                    if (strpos($nama_lower, 'ont') !== false || strpos($nama_lower, 'router') !== false || strpos($nama_lower, 'adaptor') !== false) $icon = "fa-wifi";
+                                    if (strpos($nama_lower, 'clamp') !== false || strpos($nama_lower, 'paku') !== false || strpos($nama_lower, 'sclamp') !== false || strpos($nama_lower, 'hook') !== false) $icon = "fa-tools";
+                                    if (strpos($nama_lower, 'splitter') !== false || strpos($nama_lower, 'konektor') !== false) $icon = "fa-plug";
 
-                        $searchData = strtolower($row['nama_barang'] . " " . $row['kategori'] . " " . $merk);
+                                    $searchData = strtolower($row['nama_barang'] . " " . $row['kategori'] . " " . $merk);
 
-                        echo "<div class='item-card' data-search='" . $searchData . "'>";
-                        
-                        echo "<div>"; // Wrapper atas
-                        echo "<div class='item-header'>";
-                        echo "<h3>" . $row['nama_barang'] . "</h3>";
-                        
-                        // LOGIKA PENAMPILAN FOTO / ICON
-                        if (!empty($row['foto']) && file_exists('../uploads/items/' . $row['foto'])) {
-                            // Tampilkan Foto Asli jika sudah di-upload
-                            echo "<img src='../uploads/items/" . $row['foto'] . "' class='item-image' alt='Foto'>";
-                        } else {
-                            // Tampilkan Icon jika belum ada foto
-                            echo "<div class='item-icon'><i class='fas " . $icon . "'></i></div>";
-                        }
-                        echo "</div>";
-                        
-                        echo "<div class='item-details'>";
-                        echo "<p><i class='fas fa-tag' style='color:#ccc; width:15px;'></i> Kategori: <span>" . $row['kategori'] . "</span></p>";
-                        echo "<p><i class='fas fa-copyright' style='color:#ccc; width:15px;'></i> Merk: <span>" . $merk . "</span></p>";
-                        echo "</div>";
-                        echo "</div>"; // End Wrapper atas
+                                    // Baris Tabel dengan Data Search
+                                    echo "<tr class='item-row' data-search='" . $searchData . "'>";
+                                    
+                                    echo "<td>" . $no++ . "</td>";
+                                    
+                                    // Kolom Visual (Foto/Icon) - FOTO FULL FRAME TIDAK TERPOTONG
+                                    echo "<td class='item-visual'>";
+                                    if (!empty($row['foto']) && file_exists('../uploads/items/' . $row['foto'])) {
+                                        echo "<img src='../uploads/items/" . $row['foto'] . "' class='item-image' alt='Foto Material'>";
+                                    } else {
+                                        echo "<div class='item-icon'><i class='fas " . $icon . "'></i></div>";
+                                    }
+                                    echo "</td>";
+                                    
+                                    // Kolom Teks
+                                    echo "<td><b>" . $row['nama_barang'] . "</b></td>";
+                                    echo "<td class='kategori-text'>" . $row['kategori'] . "</td>";
+                                    echo "<td><span class='merk-badge'>" . $merk . "</span></td>";
 
-                        echo "<div>"; // Wrapper bawah (Stok & Tombol)
-                        
-                        // Badge Stok
-                        if ($row['stok'] > 5) {
-                            echo "<div class='stock-badge stock-ready'><i class='fas fa-check-circle'></i> Stok Aman: " . $row['stok'] . " Unit</div>";
-                        } elseif ($row['stok'] > 0 && $row['stok'] <= 5) {
-                            echo "<div class='stock-badge stock-warning'><i class='fas fa-exclamation-triangle'></i> Menipis: " . $row['stok'] . " Unit</div>";
-                        } else {
-                            echo "<div class='stock-badge stock-empty'><i class='fas fa-times-circle'></i> Stok Habis (0)</div>";
-                        }
+                                    // Kolom Badge Stok
+                                    echo "<td>";
+                                    if ($row['stok'] > 5) {
+                                        echo "<div class='stock-badge stock-ready'><i class='fas fa-check-circle'></i> " . $row['stok'] . " Unit</div>";
+                                    } elseif ($row['stok'] > 0 && $row['stok'] <= 5) {
+                                        echo "<div class='stock-badge stock-warning'><i class='fas fa-exclamation-triangle'></i> " . $row['stok'] . " Unit</div>";
+                                    } else {
+                                        echo "<div class='stock-badge stock-empty'><i class='fas fa-times-circle'></i> Habis</div>";
+                                    }
+                                    echo "</td>";
 
-                        // Tombol Aksi
-                        echo "<div class='admin-actions'>";
-                        echo "<a href='edit_material.php?id=" . $row['id'] . "' class='btn-edit-card'><i class='fas fa-edit'></i> Edit</a>";
-                        echo "<a href='?hapus=" . $row['id'] . "' class='btn-delete-card' onclick=\"return confirm('Apakah Anda yakin ingin menghapus " . $row['nama_barang'] . " secara permanen?');\"><i class='fas fa-trash'></i> Hapus</a>";
-                        echo "</div>";
+                                    // Kolom Tombol Aksi
+                                    echo "<td>";
+                                    echo "<div class='btn-action-group'>";
+                                    echo "<a href='edit_material.php?id=" . $row['id'] . "' class='btn-edit-tbl'><i class='fas fa-edit'></i> Edit</a>";
+                                    echo "<a href='?hapus=" . $row['id'] . "' class='btn-delete-tbl' onclick=\"return confirm('Apakah Anda yakin ingin menghapus " . $row['nama_barang'] . " secara permanen?');\"><i class='fas fa-trash'></i> Hapus</a>";
+                                    echo "</div>";
+                                    echo "</td>";
 
-                        echo "</div>"; // End Wrapper bawah
-                        
-                        echo "</div>";
-                    }
-                } else {
-                    echo "<p style='grid-column: 1 / -1; text-align: center; color: #888;'>Belum ada material yang terdaftar di database.</p>";
-                }
-                ?>
+                                    echo "</tr>";
+                                }
+                            } else {
+                                echo "<tr><td colspan='7' style='text-align: center; color: #888; padding: 30px;'>Belum ada material yang terdaftar di database.</td></tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function filterCards() {
+        // Fungsi Pencarian Live disesuaikan untuk Baris Tabel (.item-row)
+        function filterTable() {
             let input = document.getElementById('searchInput').value.toLowerCase();
-            let cards = document.querySelectorAll('.item-card');
-            let hasVisibleCards = false;
+            let rows = document.querySelectorAll('.item-row');
+            let hasVisibleRows = false;
 
-            cards.forEach(card => {
-                let searchData = card.getAttribute('data-search');
+            rows.forEach(row => {
+                let searchData = row.getAttribute('data-search');
                 if (searchData.includes(input)) {
-                    card.style.display = 'flex';
-                    hasVisibleCards = true;
+                    row.style.display = ''; // Kembalikan ke default display tabel
+                    hasVisibleRows = true;
                 } else {
-                    card.style.display = 'none';
+                    row.style.display = 'none';
                 }
             });
 
-            document.getElementById('noResultMsg').style.display = hasVisibleCards ? 'none' : 'block';
+            // Sembunyikan container tabel jika kosong, tampilkan pesan No Result
+            document.getElementById('noResultMsg').style.display = hasVisibleRows ? 'none' : 'block';
+            document.getElementById('tableContainer').style.display = hasVisibleRows ? 'block' : 'none';
         }
 
+        // Fungsi Tombol Quick Tags
         function quickSearch(keyword) {
             document.getElementById('searchInput').value = keyword;
-            filterCards();
+            filterTable();
         }
     </script>
 
 </body>
-</html> 
+</html>

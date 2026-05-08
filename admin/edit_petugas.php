@@ -19,6 +19,8 @@ $id_user = $conn->real_escape_string($_GET['id']);
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_akun'])) {
     $username = $conn->real_escape_string($_POST['username']);
     $role = $conn->real_escape_string($_POST['role']);
+    $mitra = $conn->real_escape_string($_POST['mitra']);
+    $no_telpon = $conn->real_escape_string($_POST['no_telpon']);
     $password_baru = $_POST['password']; 
 
     // Cek apakah username diganti dengan nama yang sudah dipakai orang lain
@@ -29,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_akun'])) {
         // Jika password diisi, update password juga. Jika dibiarkan kosong, update selain password.
         if (!empty($password_baru)) {
             $pass_escape = $conn->real_escape_string($password_baru);
-            $sql = "UPDATE users SET username = '$username', role = '$role', password = '$pass_escape' WHERE id = '$id_user'";
+            $sql = "UPDATE users SET username = '$username', role = '$role', mitra = '$mitra', no_telpon = '$no_telpon', password = '$pass_escape' WHERE id = '$id_user'";
         } else {
-            $sql = "UPDATE users SET username = '$username', role = '$role' WHERE id = '$id_user'";
+            $sql = "UPDATE users SET username = '$username', role = '$role', mitra = '$mitra', no_telpon = '$no_telpon' WHERE id = '$id_user'";
         }
 
         if ($conn->query($sql)) {
@@ -58,7 +60,7 @@ $user_data = $query->fetch_assoc();
     <title>Edit Akun Petugas - PLN Inventory</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* CSS LAYOUT KONSISTEN (Sama seperti tambah petugas) */
+        /* CSS LAYOUT KONSISTEN */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background-color: #f4f7f6; display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background-color: #0f2c59; color: #fff; display: flex; flex-direction: column; height: 100vh; }
         .sidebar-header { padding: 20px; text-align: center; background-color: #0a1f3f; }
@@ -86,7 +88,8 @@ $user_data = $query->fetch_assoc();
         .btn-back { background-color: #f1f5f9; color: #475569; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 5px; }
         .btn-back:hover { background-color: #e2e8f0; color: #1e293b; }
 
-        .form-group { margin-bottom: 20px; position: relative; }
+        .form-row { display: flex; gap: 20px; flex-wrap: wrap; }
+        .form-group { margin-bottom: 20px; position: relative; flex: 1; min-width: 200px; }
         .form-group label { display: block; font-weight: 600; color: #444; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .form-group .input-icon { position: absolute; left: 15px; top: 40px; color: #00bcd4; z-index: 2; }
@@ -96,7 +99,7 @@ $user_data = $query->fetch_assoc();
         .toggle-password { position: absolute; right: 15px; top: 40px; color: #888; cursor: pointer; z-index: 2; }
         .toggle-password:hover { color: #333; }
 
-        .btn-submit { background: linear-gradient(135deg, #00bcd4 0%, #0f2c59 100%); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-submit { background: linear-gradient(135deg, #00bcd4 0%, #0f2c59 100%); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 188, 212, 0.3); }
 
         .info-card { background: linear-gradient(135deg, #fff3cd 0%, #ffecb3 100%); border-radius: 10px; padding: 25px; border-left: 4px solid #ffc107; color: #856404; }
@@ -134,16 +137,23 @@ $user_data = $query->fetch_assoc();
 
                     <form action="" method="POST">
                         <div class="form-group">
-                            <label>Username</label>
+                            <label>Username / Nama Teknisi</label>
                             <i class="fas fa-user input-icon"></i>
                             <input type="text" name="username" class="form-control" value="<?php echo $user_data['username']; ?>" required>
                         </div>
                         
-                        <div class="form-group">
-                            <label>Reset Kata Sandi (Kosongkan jika tidak ingin diubah)</label>
-                            <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="passInput" name="password" class="form-control" placeholder="Ketik sandi baru...">
-                            <i class="fas fa-eye-slash toggle-password" id="toggleIcon" onclick="togglePassword()" title="Tampilkan Password"></i>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Mitra (Perusahaan Penyedia)</label>
+                                <i class="fas fa-building input-icon"></i>
+                                <input type="text" name="mitra" class="form-control" value="<?php echo isset($user_data['mitra']) && $user_data['mitra'] != '-' ? $user_data['mitra'] : ''; ?>" placeholder="Contoh: PT. Maju Jaya">
+                            </div>
+
+                            <div class="form-group">
+                                <label>No. Telepon / WhatsApp</label>
+                                <i class="fas fa-phone-alt input-icon"></i>
+                                <input type="text" name="no_telpon" class="form-control" value="<?php echo isset($user_data['no_telpon']) && $user_data['no_telpon'] != '-' ? $user_data['no_telpon'] : ''; ?>" placeholder="Contoh: 08123456789">
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -155,6 +165,13 @@ $user_data = $query->fetch_assoc();
                             </select>
                         </div>
 
+                        <div class="form-group">
+                            <label>Reset Kata Sandi (Kosongkan jika tidak ingin diubah)</label>
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="passInput" name="password" class="form-control" placeholder="Ketik sandi baru...">
+                            <i class="fas fa-eye-slash toggle-password" id="toggleIcon" onclick="togglePassword()" title="Tampilkan Password"></i>
+                        </div>
+
                         <button type="submit" name="update_akun" class="btn-submit">
                             <i class="fas fa-save"></i> Simpan Perubahan Akun
                         </button>
@@ -164,8 +181,8 @@ $user_data = $query->fetch_assoc();
                 <div class="info-card">
                     <h4><i class="fas fa-info-circle"></i> Catatan Edit Akun</h4>
                     <ul>
-                        <li><b>Reset Password:</b> Jika teknisi lupa *password*, Anda cukup mengetikkan *password* baru di kolom sandi. Jika kolom dibiarkan kosong, sandi lama tidak akan berubah.</li>
-                        <li><b>Ubah Username:</b> Mengubah username akan otomatis berpengaruh pada nama yang tampil di seluruh riwayat transaksi pengajuan dan retur teknisi tersebut.</li>
+                        <li><b>Reset Password:</b> Jika teknisi lupa *password*, Anda cukup mengetikkan *password* baru di kolom sandi. Jika dibiarkan kosong, sandi lama tidak berubah.</li>
+                        <li><b>Data Mitra & Telp:</b> Mengisi form Mitra dan No. Telepon sangat penting agar data tersebut langsung terhubung dan tercatat lengkap di halaman History Transaksi saat teknisi mengajukan barang.</li>
                     </ul>
                 </div>
             </div>

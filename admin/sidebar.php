@@ -13,7 +13,7 @@
         <li><a href="input_material.php"><i class="fas fa-plus-square"></i> Input Material</a></li>
         
         <li class="menu-title">TRANSAKSI</li>
-        <li><a href="data_pengambilan.php"><i class="fas fa-clipboard-check"></i> Data Pengambilan</a></li>
+        <li><a href="data_pengambilan.php"><i class="fas fa-clipboard-check"></i> Data Pengajuan</a></li>
         <li><a href="data_pengembalian.php"><i class="fas fa-undo"></i> Data Retur (Masuk)</a></li>
         <li><a href="history_transaksi.php"><i class="fas fa-history"></i> History Transaksi</a></li>
         
